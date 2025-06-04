@@ -1,4 +1,4 @@
-package de.goodyear;
+package de.gothaer;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
