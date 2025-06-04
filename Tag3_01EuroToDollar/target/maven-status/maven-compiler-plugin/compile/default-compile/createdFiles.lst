@@ -1,0 +1,11 @@
+de\gothaer\gui\Euro2DollarRechnerViewImpl$1.class
+de\gothaer\gui\Euro2DollarRechnerView.class
+de\gothaer\model\ExchangeServiceException.class
+de\gothaer\application\Main.class
+de\gothaer\model\Euro2DollarRechnerImpl.class
+de\gothaer\model\Euro2DollarRechner.class
+de\gothaer\gui\Euro2DollarRechnerViewImpl.class
+de\gothaer\model\ExchanceService.class
+de\gothaer\gui\presenter\Euro2DollarPresenter.class
+de\gothaer\gui\presenter\Euro2DollarPresenterImpl.class
+de\gothaer\model\ExchanceServiceImpl.class
