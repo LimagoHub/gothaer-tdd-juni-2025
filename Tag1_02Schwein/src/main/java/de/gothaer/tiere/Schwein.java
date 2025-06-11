@@ -4,6 +4,9 @@ import java.util.Objects;
 
 public class Schwein {
 
+
+    public static final int DEFAULT_WEIGHT = 10;
+
     private String name;
     private int gewicht;
 
@@ -13,7 +16,7 @@ public class Schwein {
 
     public Schwein(final String name) {
         setName(name);
-        setGewicht(10);
+        setGewicht(DEFAULT_WEIGHT);
     }
 
     public String getName() {
@@ -21,7 +24,7 @@ public class Schwein {
     }
 
     public final void setName(final String name) {
-        if ("elsa".equalsIgnoreCase(name)) throw new IllegalArgumentException("Ungueltiger Name");
+        if (name == null || "elsa".equalsIgnoreCase(name)) throw new IllegalArgumentException("Unerlaubter Name");
         this.name = name;
     }
 
