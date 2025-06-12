@@ -6,16 +6,22 @@ import de.gothaer.service.BlacklistService;
 import de.gothaer.service.PersonenServiceException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PersonenServiceImplTest {
@@ -28,6 +34,10 @@ class PersonenServiceImplTest {
 
     @Mock
     private BlacklistService blacklistServiceMock;
+
+
+    @Captor
+    ArgumentCaptor<Person> personCaptor;
 
     @Test
     void speichern_PersonIsNull_throwsPersonenServiceException() throws PersonenServiceException {
@@ -63,8 +73,11 @@ class PersonenServiceImplTest {
 
     @Test
     void speichern_UnerwuenschtePerson_throwsPersonenServiceException() throws PersonenServiceException {
-        Person invalidPerson = Person.builder().id(UUID.randomUUID().toString()).vorname("Attila").nachname("Der Hunne").build();
-        PersonenServiceException ex =  assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
+        Person validPerson = Person.builder().id(UUID.randomUUID().toString()).vorname("John").nachname("Der Hunne").build();
+
+        when(blacklistServiceMock.isBlacklisted(validPerson)).thenReturn(true);
+
+        PersonenServiceException ex =  assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(validPerson));
         assertEquals("Blacklisted Person.", ex.getMessage());
     }
 
@@ -82,9 +95,42 @@ class PersonenServiceImplTest {
     @Test
     void speichern_HappyDay_PersonPassedToRepo() throws PersonenServiceException {
         Person validPerson = Person.builder().id(UUID.randomUUID().toString()).vorname("John").nachname("Doe").build();
+        when(blacklistServiceMock.isBlacklisted(validPerson)).thenReturn(false);
         objectUnderTest.speichern(validPerson);
+        verify(blacklistServiceMock).isBlacklisted(validPerson);
         verify(repoMock).save(validPerson);
     }
 
+    @Test
+    void overload_demo() throws PersonenServiceException {
+        when(blacklistServiceMock.isBlacklisted(any(Person.class))).thenReturn(false);
 
+        objectUnderTest.speichern("John", "Doe");
+
+        verify(repoMock).save(personCaptor.capture());
+
+        Person person = personCaptor.getValue();
+        assertNotNull(person.getId());
+        assertThat( person.getVorname()).startsWith("J");
+        assertEquals("Doe", person.getNachname());
+    }
+    @ParameterizedTest(name = "Nr. {index} mit invalider Person {0} und Meldung {1}")
+    @MethodSource("providePersonsForSpeichern")
+    void speichern_simplevalidation(Person p, String message) {
+        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(p));
+        assertEquals(message, ex.getMessage());
+        verify(repoMock, never()).save(any(Person.class));
+    }
+    private static Stream<Arguments> providePersonsForSpeichern() {
+        return Stream.of(
+                Arguments.of((Person)null, "Person darf nicht null sein."),
+                Arguments.of(Person.builder().id("1").vorname("John").nachname(null).build(), "Nachname zu kurz."),
+                Arguments.of(Person.builder().id("1").vorname("John").nachname("").build(), "Nachname zu kurz."),
+                Arguments.of(Person.builder().id("1").vorname("John").nachname("D").build(), "Nachname zu kurz."),
+                Arguments.of(Person.builder().id("1").vorname(null).nachname("Doe").build(), "Vorname zu kurz."),
+                Arguments.of(Person.builder().id("1").vorname("").nachname("Doe").build(), "Vorname zu kurz."),
+                Arguments.of(Person.builder().id("1").vorname("J").nachname("Doe").build(), "Vorname zu kurz.")
+
+        );
+    }
 }

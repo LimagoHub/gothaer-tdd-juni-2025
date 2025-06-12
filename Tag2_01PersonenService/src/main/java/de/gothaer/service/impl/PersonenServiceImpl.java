@@ -7,6 +7,8 @@ import de.gothaer.service.PersonenService;
 import de.gothaer.service.PersonenServiceException;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 public class PersonenServiceImpl implements PersonenService {
 
@@ -34,8 +36,10 @@ public class PersonenServiceImpl implements PersonenService {
 
     }
 
+
     private void speichernImpl(final Person person) throws PersonenServiceException {
         checkPerson(person);
+        //person.setId(UUID.randomUUID().toString());
         repository.save(person);
     }
 
@@ -45,7 +49,7 @@ public class PersonenServiceImpl implements PersonenService {
     }
 
     private void businessCheck(final Person person) throws PersonenServiceException {
-        if("Attila".equals(person.getVorname())) throw new PersonenServiceException("Blacklisted Person.");
+        if(blacklistService.isBlacklisted(person)) throw new PersonenServiceException("Blacklisted Person.");
     }
 
     private void validatePerson(final Person person) throws PersonenServiceException {
@@ -53,4 +57,14 @@ public class PersonenServiceImpl implements PersonenService {
         if(person.getVorname() == null || person.getVorname().length() < 2) throw new PersonenServiceException("Vorname zu kurz.");
         if(person.getNachname() == null || person.getNachname().length() < 2) throw new PersonenServiceException("Nachname zu kurz.");
     }
+
+    @Override
+    public void speichern(final String vorname, final String nachname) throws PersonenServiceException {
+        Person person = Person.builder().id(UUID.randomUUID().toString()).vorname(vorname).nachname(nachname).build();
+        speichern(person);
+
+    }
+
+
+
 }

@@ -17,6 +17,18 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class ComputerPlayerTest {
 
+    @InjectMocks
+    private ComputerPlayer objectUnderTest;
 
+    @Mock
+    private Writer writerMock;
+
+
+    @ParameterizedTest
+    @CsvSource({"20,3", "21,1", "22,1", "23,2","40,3", "41,1", "42,1", "43,2"})
+    void doTurn(int remainingStones, int expectedTurn) {
+        assertEquals(expectedTurn,objectUnderTest.doTurn(remainingStones));
+        verify(writerMock,Mockito.times(1)).write("Computer nimmt "+ expectedTurn + " Steine.");
+    }
 
 }

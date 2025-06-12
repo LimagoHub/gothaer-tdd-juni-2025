@@ -1,0 +1,4 @@
+mail:
+  smtp: mail.irgendwo.de
+  username: john
+  password: geheim
