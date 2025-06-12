@@ -27,6 +27,31 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 class PersonenCommandControllerTest {
 
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @MockBean
+    private PersonService serviceMock;
+
+    @Test
+    void delete_success() throws Exception {
+        when(serviceMock.loeschen(any(UUID.class))).thenReturn(true);
+        var entity = restTemplate.exchange("/v1/personen/b2e24e74-8686-43ea-baff-d9396b4202e0",
+                HttpMethod.DELETE,
+                null,
+                Void.class);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+    }
+
+    @Test
+    void delete_notFound() throws Exception {
+        when(serviceMock.loeschen(any(UUID.class))).thenReturn(false);
+        var entity = restTemplate.exchange("/v1/personen/b2e24e74-8686-43ea-baff-d9396b4202e0",
+                HttpMethod.DELETE,
+                null,
+                Void.class);
+        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+    }
 
 
 }

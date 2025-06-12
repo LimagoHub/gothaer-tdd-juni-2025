@@ -8,11 +8,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class ServiceUsingDependencyTest {
 
     @InjectMocks
@@ -62,6 +65,13 @@ class ServiceUsingDependencyTest {
         doNothing().when(dependencyMock).consumer(anyInt());
         objectUnderTest.foo();
         verify(dependencyMock, times(1)).consumer(5);
+
+    }
+
+    @Test
+    void xy() {
+        lenient().doNothing().when(dependencyMock).consumer(anyInt());
+
 
     }
 }

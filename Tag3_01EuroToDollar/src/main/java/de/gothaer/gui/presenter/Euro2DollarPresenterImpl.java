@@ -56,8 +56,14 @@ public class Euro2DollarPresenterImpl implements Euro2DollarPresenter {
 	 */
 	@Override
 	public void onRechnen() {
-
-
+        try {
+			double dollar = model.calculateEuro2Dollar(Double.parseDouble(view.getEuro()));
+			view.setDollar(String.format("%.2f", dollar));
+        } catch (NumberFormatException | NullPointerException e) {
+			view.setDollar("Kann nicht konvertiert werden.");
+        } catch (RuntimeException e) {
+			view.setDollar("Wechselkurs nicht verfuegbar.");
+		}
     }
 
 	/* (non-Javadoc)
@@ -65,7 +71,7 @@ public class Euro2DollarPresenterImpl implements Euro2DollarPresenter {
 	 */
 	@Override
 	public void onBeenden() {
-
+		view.close();
 	}
 
 	/* (non-Javadoc)
@@ -73,13 +79,20 @@ public class Euro2DollarPresenterImpl implements Euro2DollarPresenter {
 	 */
 	@Override
 	public void onPopulateItems() {
-
+		view.setEuro("0");
+		view.setDollar("0");
+		view.setRechnenEnabled(true);
 
 	}
 
 	@Override
 	public void updateRechnenActionState() {
-
+		try {
+			Double.parseDouble(view.getEuro());
+			view.setRechnenEnabled(true);
+		} catch (NumberFormatException | NullPointerException e) {
+			view.setRechnenEnabled(false);
+		}
 
     }
 }

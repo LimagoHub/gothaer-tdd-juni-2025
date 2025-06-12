@@ -68,4 +68,42 @@ class PersonQueryControllerTest {
         assertEquals("Doe", personDTO.getNachname());
     }
 
+    @Test
+    void test4() throws Exception {
+
+        PersonDto dto  = PersonDto.builder().vorname("John").nachname("Doe").build();
+        HttpEntity<PersonDto> request = new HttpEntity<>(dto);
+
+        var personen = List.of(
+                Person.builder().id(UUID.fromString("86dac2d5-7edc-483a-abc6-239e5b93eb13")).vorname("John").nachname("Doe").build(),
+                Person.builder().id(UUID.fromString("86dac2d5-7edc-483a-abc6-239e5b93eb13")).vorname("John").nachname("Rambo").build(),
+                Person.builder().id(UUID.fromString("86dac2d5-7edc-483a-abc6-239e5b93eb13")).vorname("John").nachname("Wayne").build()
+        );
+
+        when(serviceMock.findeAlle()).thenReturn(personen);
+        var entity = restTemplate.exchange("/v1/personen",
+                HttpMethod.GET,
+                request,
+                new ParameterizedTypeReference<List<PersonDto>>() { });
+
+        var personDTO = entity.getBody();
+
+    }
+
+    @Test
+    void post() throws PersonenServiceException {
+        final UUID uuid = UUID.randomUUID();
+        final PersonDto personDtoToSend = PersonDto.builder().id(uuid).vorname("John").nachname("Doe").build();
+        final HttpEntity<PersonDto> request = new HttpEntity<>(personDtoToSend);
+
+        final Person personToVerify = Person.builder().id(uuid).vorname("John").nachname("Doe").build();
+
+        doNothing().when(serviceMock).speichern(any());
+
+        var entity = restTemplate.exchange("/v1/personen", HttpMethod.POST, request, Void.class);
+        verify(serviceMock).speichern(personToVerify);
+        assertTrue(entity.getHeaders().getLocation().getPath().endsWith("/v1/personen/" + uuid.toString()));
+        assertEquals(HttpStatus.CREATED, entity.getStatusCode() );
+    }
+
 }
